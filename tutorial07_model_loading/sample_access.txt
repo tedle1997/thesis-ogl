@@ -1,0 +1,38 @@
+        
+
+--------------------------------------------------------------------------------------------------------------
+
+        glBindTexture(GL_TEXTURE_2D, InputTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+
+        GLuint MaxPyrProgramID = LoadShaders("simpleVertexShader.glsl", "MaxPyrFragmentShader.glsl");  //Script to compile shaders
+        for (int level = 1; level < 10; level++) {
+
+            glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+            glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, InputTexture, level);
+
+
+            glViewport(0, 0, textureWidth / pow(2.0, level), textureHeight / pow(2.0, level));
+            glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+            glUseProgram(MaxPyrProgramID);
+            GLuint levelID = glGetUniformLocation(MaxPyrProgramID, "level");
+            glUniform1i(levelID, level);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, InputTexture);
+            GLuint TextureID = glGetUniformLocation(MaxPyrProgramID, "textureSampler");
+            glUniform1i(TextureID, 0);
+
+            drawQuad();
+
+            glBindTexture(GL_TEXTURE0, 0);
+
+        }
